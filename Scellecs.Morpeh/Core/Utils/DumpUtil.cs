@@ -2,7 +2,7 @@
 using System.Collections;
 using System.IO;
 
-namespace Scellecs.Morpeh.Core.Utils
+namespace Scellecs.Morpeh
 {
     public static class DumpUtil
     {
