@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Reflection;
 
 namespace Scellecs.Morpeh
 {
@@ -25,33 +26,46 @@ namespace Scellecs.Morpeh
         }
         
         public static void Dump(this Entity entity, TextWriter s) {
-            s.WriteLine($"==== <entity: {entity.Id}>");
+            if (entity.IsDisposed())
+            {
+                s.WriteLine($"==== <entity: disposed>");
+                return;
+            }
+            
             var arch = entity.GetWorld().entities[entity.Id].currentArchetype;
+            if(arch == null) {
+                return;
+            }
+            s.WriteLine($"==== <entity: {entity.Id}>");
+            
             foreach (var typeId in arch.components) {
                 var def  = ExtendedComponentId.Get(typeId);
                 var data = def.entityGetComponentBoxed.Invoke(entity);
-                if (def.isMarker) {
-                    s.WriteLine("[" + def.type.Name + "]");
-                } else {
-                    WriteComponent(data, s);
-                }
+                WriteComponent(data, def.type, s);
             }
             s.Write("\n");
         }
-        
+
         public static void WriteComponent<T>(T data, TextWriter s)
         {
-            var type = typeof(T);
+            WriteComponent(data, typeof(T), s);
+        }
+        
+        private static void WriteComponent(object data, Type type, TextWriter s)
+        {
             s.WriteLine("[" + type.Name + "]");
             foreach (var field in type.GetFields())
             {
+                if(!field.IsPublic || field.MemberType != MemberTypes.Field) continue;
+                
+                s.Write("  ");
                 s.Write(field.Name);
                 s.Write(": ");
                 WriteFieldValue(field.GetValue(data), s);
             }
         }
 
-        private static void WriteFieldValue<T>(T data, TextWriter s)
+        private static void WriteFieldValue(object data, TextWriter s)
         {
             switch (data)
             {
@@ -63,9 +77,6 @@ namespace Scellecs.Morpeh
                         s.Write("\n");
                     }
                     s.Write("}\n");
-                    return;
-                case Enum:
-                    s.Write(Enum.GetName(typeof(T), data));
                     return;
                 case Entity entity:
                     s.Write(entity.IsDisposed() ? "<entity: disposed>" : $"<entity: {entity.Id}>");
