@@ -16,6 +16,7 @@
         <PackageTags>ecs, unity, gamedev</PackageTags>
         <Company>Scellecs</Company>
         <Product>Morpeh</Product>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
