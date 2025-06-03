@@ -62,6 +62,7 @@ namespace Scellecs.Morpeh
                 s.Write(field.Name);
                 s.Write(": ");
                 WriteFieldValue(field.GetValue(data), s);
+                s.Write("\n");
             }
         }
 
@@ -70,13 +71,18 @@ namespace Scellecs.Morpeh
             switch (data)
             {
                 case IList list:
+                    if(list.Count > 100)
+                    {
+                        s.Write("{ ... too many items to display > 100 }");
+                        return;
+                    }
                     s.Write("{\n");
                     foreach (var x in list)
                     {
                         WriteFieldValue(x, s);
                         s.Write("\n");
                     }
-                    s.Write("}\n");
+                    s.Write("}");
                     return;
                 case Entity entity:
                     s.Write(entity.IsDisposed() ? "<entity: disposed>" : $"<entity: {entity.Id}>");
